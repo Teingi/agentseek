@@ -36,6 +36,9 @@ observability = [
 oceanbase = [
     "agentseek-tapestore-oceanbase",
 ]
+context = [
+    "agentseek-contextseek",
+]
 
 [project.scripts]
 agentseek = "agentseek.__main__:app"
@@ -86,6 +89,7 @@ agentseek-langchain = { workspace = true }
 agentseek-observability = { workspace = true }
 agentseek-schedule-sqlalchemy = { workspace = true }
 agentseek-ag-ui = { workspace = true }
+agentseek-contextseek = { workspace = true }
 
 [tool.uv.workspace]
 members = [
@@ -94,6 +98,7 @@ members = [
     "contrib/agentseek-observability",
     "contrib/agentseek-schedule-sqlalchemy",
     "contrib/agentseek-tapestore-oceanbase",
+    "contrib/agentseek-contextseek",
     ".agentseek/agentseek-project",
 ]
 

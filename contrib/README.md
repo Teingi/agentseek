@@ -25,6 +25,7 @@ agentseek follows Bub's extension conventions. `AGENTSEEK_*` environment variabl
 | [agentseek-tapestore-oceanbase](agentseek-tapestore-oceanbase/README.md) | `tapestore-oceanbase` | SQLAlchemy tape storage with OceanBase compatibility and optional vector retrieval. |
 | [agentseek-langchain](agentseek-langchain/README.md) | `langchain` | Route Bub model turns through a user-provided LangChain `Runnable` or agent. |
 | [agentseek-schedule-sqlalchemy](agentseek-schedule-sqlalchemy/README.md) | `schedule` | Persist APScheduler jobs in a SQLAlchemy-backed store. |
+| [agentseek-contextseek](agentseek-contextseek/README.md) | `contextseek` | ContextSeek semantic context layer: write, retrieve, evolve, and serve context across agent turns. |
 
 ## Documentation Boundary
 
