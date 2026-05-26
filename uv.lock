@@ -38,6 +38,7 @@ dependencies = [
     { name = "bub" },
     { name = "bub-feishu" },
     { name = "bub-mcp" },
+    { name = "logfire" },
     { name = "pydantic-settings" },
 ]
 
@@ -80,6 +81,7 @@ requires-dist = [
     { name = "bub", specifier = ">=0.3.7" },
     { name = "bub-feishu", git = "https://github.com/bubbuild/bub-contrib.git?subdirectory=packages%2Fbub-feishu&branch=main" },
     { name = "bub-mcp", git = "https://github.com/bubbuild/bub-contrib.git?subdirectory=packages%2Fbub-mcp&branch=main" },
+    { name = "logfire", specifier = ">=4.33.0" },
     { name = "pydantic-settings", specifier = ">=2.0.0" },
 ]
 provides-extras = ["ag-ui", "langchain", "observability", "oceanbase"]

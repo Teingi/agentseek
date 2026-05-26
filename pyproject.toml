@@ -20,6 +20,7 @@ dependencies = [
     "bub-feishu",
     "bub-mcp",
     "agentseek-schedule-sqlalchemy",
+    "logfire>=4.33.0",
     "pydantic-settings>=2.0.0",
 ]
 

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import importlib
 import sys
+from typing import Literal
 
+import logfire
+import logfire.integrations.loguru as logfire_loguru
 import typer
 
 from agentseek.cli import apply_agentseek_cli_overrides
@@ -27,20 +30,21 @@ def _maybe_enable_observability() -> None:
         instrument()
 
 
+def _logfire_console_config(enabled: bool) -> logfire.ConsoleOptions | Literal[False]:
+    if not enabled:
+        return False
+
+    return logfire.ConsoleOptions()
+
+
 def _instrument_agentseek() -> None:
     from loguru import logger
 
     logger.remove()
     logger.add(sys.stderr, colorize=True)
 
-    try:
-        logfire = importlib.import_module("logfire")
-        logfire_loguru = importlib.import_module("logfire.integrations.loguru")
-    except ModuleNotFoundError:
-        return
-
     settings = get_agentseek_settings()
-    logfire.configure(send_to_logfire=False, console=settings.console)
+    logfire.configure(send_to_logfire=False, console=_logfire_console_config(settings.console))
     logger.add(logfire_loguru.LogfireHandler(), format="{message}")
     _maybe_enable_observability()
 
