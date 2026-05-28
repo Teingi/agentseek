@@ -58,14 +58,12 @@ See `.env.example` in the repo root for a full list of supported variables.
 
 ## Run
 
-Initialize a project (through `agentseek-cli`):
+`agentseek ctx` forwards every sub-command verbatim to the upstream
+[`contextseek` CLI](https://pypi.org/project/contextseek/). The verb list,
+flags, and exit codes are owned by contextseek; this package does not maintain
+a shadow command map. Run `agentseek ctx --help` to see the canonical list.
 
-```bash
-agentseek ctx init --backend memory
-agentseek ctx init --backend oceanbase
-```
-
-Retrieve and manage context:
+Common verbs:
 
 ```bash
 agentseek ctx add      --scope acme/db/eng --content "..." --source wiki
@@ -74,17 +72,41 @@ agentseek ctx overview --scope acme/db/eng
 agentseek ctx compact  --scope acme/db/eng
 ```
 
-Start the HTTP + MCP server:
+Storage directories (e.g. `.contextseek/store`) are created on first write
+by the chosen backend — no separate `init` step is required.
 
-```bash
-agentseek ctx serve --port 8001 --mcp
+### MCP server registration
+
+contextseek ships a stdio MCP server (`contextseek-mcp-stdio`). To expose it
+to `bub-mcp` (and any IDE/agent that reads `bub`-style MCP config), add an
+entry to your MCP config file. With agentseek defaults that file is
+`.agentseek/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "contextseek": { "command": "contextseek-mcp-stdio" }
+  }
+}
 ```
 
-Batch import from external sources:
+The server reads `AGENTSEEK_CTX_*` from the project `.env` via
+`agentseek_contextseek.config`, so no environment values need to be inlined
+into `mcp.json`.
+
+### HTTP server
+
+contextseek's HTTP API and Python-only DataPlug imports do not (yet) have CLI
+entry points upstream. Use the library directly:
 
 ```bash
-agentseek ctx sync --scope acme/db/eng --source rag --source powermem
-agentseek ctx sync --scope acme/db/eng --dry-run
+# HTTP
+uvicorn contextseek.http.server:create_app --factory --host 127.0.0.1 --port 8001
+
+# DataPlug import
+python -c "from contextseek.client.contextseek import ContextSeek; \
+           from contextseek.plugs.rag_plug import RagPlug; \
+           ContextSeek.from_settings().plug(RagPlug(), scope='acme/db/eng')"
 ```
 
 ## Runtime Behavior
@@ -110,5 +132,5 @@ pytest contrib/agentseek-contextseek/tests/
 ## Limitations
 
 - `before_model` uses `trylast=True`, meaning it runs after other non-`trylast` hooks. If another hook modifies the prompt before this one, the injected context will be appended to the already-modified prompt.
-- The scope granularity is `tenant/chat_id/session_id`. Context does not automatically propagate across sessions; use `agentseek ctx sync` or direct `ctx.add` calls to seed cross-session context.
+- The scope granularity is `tenant/chat_id/session_id`. Context does not automatically propagate across sessions; use a contextseek DataPlug or direct `ctx.add` calls to seed cross-session context.
 - Synchronous contextseek client calls are offloaded to a thread pool via `asyncio.to_thread` to avoid blocking the event loop.
