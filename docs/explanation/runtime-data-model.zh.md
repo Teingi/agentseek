@@ -6,7 +6,7 @@ runs: no
 verified_on: 2026-05-28
 sources:
   - src/agentseek/__main__.py
-  - src/agentseek/cli.py
+  - src/agentseek/cli/runtime.py
   - pyproject.toml
   - contrib/README.md
   - blog/introducing-agentseek.md
@@ -95,7 +95,7 @@ plugin。决策矩阵在 [扩展模型](extension-model.zh.md)。
   （`entrypoint.sh:11-15, 37-39`）。
 
 MCP server 适合那些应该被 **声明而非编码** 的 tool 集成 —— issue tracker、搜索后端、内部服务。
-当一个 tool 集成需要 lifecycle 行为或自己的 hook 时，伸手去拿 plugin。
+当一个 tool 集成需要自己的 runtime hook 时，伸手去拿 plugin。
 
 ### Plugin —— runtime 扩展表面
 
@@ -104,18 +104,18 @@ MCP server 适合那些应该被 **声明而非编码** 的 tool 集成 —— i
 方式。
 
 agentseek 包含 Feishu、MCP、tape-store OpenTelemetry 与 SQLAlchemy-backed scheduling
-这些常用运行时 plugins。其余 plugin 通过 `agentseek install` 按需安装：
+这些常用运行时 plugins。其余 plugin 通过 `agentseek plugin install` 按需安装：
 
 | 命令 | 添加 |
 | --- | --- |
-| `agentseek install agentseek-ag-ui` | AG-UI channel 适配器 |
-| `agentseek install agentseek-langchain` | LangChain model 路由 |
-| `agentseek install bub-tapestore-otel@main` | Tape-first OpenTelemetry tracing |
-| `agentseek install agentseek-tapestore-oceanbase` | OceanBase tape 存储 |
-| `agentseek install agentseek-contextseek` | ContextSeek 语义 context 层 |
+| `agentseek plugin install agentseek-ag-ui` | AG-UI channel 适配器 |
+| `agentseek plugin install agentseek-langchain` | LangChain model 路由 |
+| `agentseek plugin install bub-tapestore-otel@main` | Tape-first OpenTelemetry tracing |
+| `agentseek plugin install agentseek-tapestore-oceanbase` | OceanBase tape 存储 |
+| `agentseek plugin install agentseek-contextseek` | ContextSeek 语义 context 层 |
 
 Plugin 被安装到与 agentseek **相同的 Python 环境** 中；它们不是 sandbox runtime 单元。
-位于 `.agentseek/agentseek-project` 的 `agentseek install` sandbox
+位于 `.agentseek/agentseek-project` 的 `agentseek plugin install` sandbox
 （见 [agentseek 与 Bub 的关系](bub-relationship.zh.md)）是一个用于解析和添加 plugin 的 uv 项目，
 不是 runtime 边界。
 
@@ -125,9 +125,9 @@ Plugin 被安装到与 agentseek **相同的 Python 环境** 中；它们不是 
 是另一种；像 Feishu、Telegram 这样的聊天平台是 plugin 提供的 channel。`agentseek-ag-ui`
 plugin 为 CopilotKit 等前端添加一个 AG-UI SSE channel 适配器。
 
-agentseek 的 CLI override 让 **所有 `*.lifecycle` channel** 与你请求的主 channel 一同启用
-（`src/agentseek/cli.py:51-57, 83-112`）。这就是让 MCP 和其他 helper 能在交互式
-`agentseek chat` 会话内启动的机制 —— 它们在某个 lifecycle channel 上注册自己，manager 会在第一
+agentseek 的 CLI override 让 **所有 Bub 支持通道（`*.lifecycle`）** 与你请求的主 channel 一同启用
+（`src/agentseek/cli/runtime.py:51-57, 83-112`）。这就是让 MCP 和其他 helper 能在交互式
+`agentseek chat` 会话内启动的机制 —— 它们在某个 Bub 支持通道上注册自己，manager 会在第一
 轮 turn 之前把它们唤醒。
 
 ## 为什么是这样

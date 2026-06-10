@@ -12,7 +12,7 @@ to ``contrib/``).  At runtime the command resolves them in two ways:
    a working tree, the command prepares the repository in cookiecutter's cache
    first, then reads templates from that cached checkout.
 
-Spec resolution (mirrors bub ``install``'s ``_build_requirement`` pattern):
+Spec resolution:
 
 * ``agentseek create``                                — interactive type + template selection.
 * ``agentseek create deepagents``                     — ``templates/deepagents/default``.
@@ -59,7 +59,7 @@ class _SwallowArgsGroup(TyperGroup):
 
 app = typer.Typer(
     name="create",
-    help="Create a new agent project from a pre-built template.",
+    help="Scaffold a new agent project from a pre-built template.",
     add_completion=False,
     no_args_is_help=False,
     cls=_SwallowArgsGroup,
@@ -251,9 +251,9 @@ def _print_all_templates(templates_root: Path, descriptions: dict[str, str]) -> 
         _print_templates_table(project_type, templates, descriptions)
     if total:
         typer.echo("\n  Usage:")
-        typer.echo("    agentseek create <type>/<name>          e.g. agentseek create langchain/cli-remote")
-        typer.echo("    agentseek create <type>                 use default template for the type")
-        typer.echo("    agentseek create                        interactive selection")
+        typer.echo("    agentseek create <type>/<name>       e.g. agentseek create langchain/cli-remote")
+        typer.echo("    agentseek create <type>              use default template for the type")
+        typer.echo("    agentseek create                     interactive selection")
         typer.echo()
 
 
@@ -363,7 +363,7 @@ def _parse_argv(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="agentseek create",
         add_help=True,
-        description="Create a new agent project from a pre-built template.",
+        description="Scaffold a new agent project from a pre-built template.",
     )
     parser.add_argument(
         "spec",
@@ -409,8 +409,8 @@ def _parse_argv(argv: list[str]) -> argparse.Namespace:
 
 @app.callback(invoke_without_command=True)
 def create(ctx: typer.Context) -> None:
-    """Create a new agent project from a pre-built template."""
-    args = _parse_create_args(ctx)
+    """Scaffold a new agent project from a pre-built template."""
+    args = _parse_new_args(ctx)
 
     # --- External spec (URL or absolute path) → passthrough to cookiecutter ---
     if args.spec and _is_external_spec(args.spec):
@@ -462,11 +462,12 @@ def create(ctx: typer.Context) -> None:
     _run_cookiecutter(source, output_dir=Path.cwd(), no_input=args.no_input)
 
 
-def _parse_create_args(ctx: typer.Context) -> argparse.Namespace:
+def _parse_new_args(ctx: typer.Context) -> argparse.Namespace:
     try:
         return _parse_argv(list(ctx.args))
     except SystemExit as exc:
-        raise typer.Exit(int(exc.code or 2)) from exc
+        code = exc.code if isinstance(exc.code, int) else 2
+        raise typer.Exit(code) from exc
 
 
 def _split_spec(args: argparse.Namespace) -> tuple[str | None, str | None]:

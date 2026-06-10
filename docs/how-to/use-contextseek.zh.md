@@ -5,7 +5,7 @@ audience: [A2]
 runs: yes
 verified_on: 2026-05-28
 sources:
-  - src/agentseek/cli.py
+  - src/agentseek/cli/runtime.py
   - contrib/agentseek-contextseek/README.md
 ---
 
@@ -20,11 +20,11 @@ contrib 包提供；`agentseek ctx` 会转发到其底层 `contextseek` CLI。
 - 已安装 `agentseek-contextseek` 插件：
 
   ```bash title="not executed in this run"
-  agentseek install agentseek-contextseek
+  agentseek plugin install agentseek-contextseek
   ```
 
-  该命令同时拉入 `agentseek-cli` (用于 CLI 挂载点)
-  与 `agentseek-contextseek`。
+  该命令会安装 ContextSeek runtime plugin，并让同一环境里的 `agentseek ctx`
+  转发命令可用。
 
 - 已配置 ContextSeek 自身的 backend。见
   [contextseek README](https://github.com/ob-labs/agentseek/blob/main/contrib/agentseek-contextseek/README.md)。
@@ -70,7 +70,7 @@ contrib 包提供；`agentseek ctx` 会转发到其底层 `contextseek` CLI。
 
 | 现象 | 可能原因 | 解决 |
 | --- | --- | --- |
-| `agentseek ctx` 报 command not found | 未安装 `agentseek-contextseek` | `agentseek install agentseek-contextseek`。 |
+| `agentseek ctx` 报 command not found | 未安装 `agentseek-contextseek` | `agentseek plugin install agentseek-contextseek`。 |
 | `contextseek` 报 backend 缺失 | 配置未就绪 | 见 [contextseek README](https://github.com/ob-labs/agentseek/blob/main/contrib/agentseek-contextseek/README.md)。 |
 
 ## 回退

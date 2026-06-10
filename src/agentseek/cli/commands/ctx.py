@@ -17,6 +17,7 @@ is intentionally **not** handled here — it belongs to the
 
 from __future__ import annotations
 
+import importlib
 from collections.abc import Callable, Sequence
 from typing import NoReturn
 
@@ -26,6 +27,10 @@ from typer.core import TyperGroup
 
 # Signature of ``contextseek.cli.run_cli`` we forward to.
 _RunCli = Callable[[Sequence[str]], int]
+
+
+class MissingContextSeekError(Exception):
+    """Raised when the optional ContextSeek CLI is not installed."""
 
 
 class _ContextSeekForwardingGroup(TyperGroup):
@@ -90,18 +95,29 @@ def _ctx_root(typer_ctx: typer.Context) -> None:
 
 
 def _forward_to_contextseek(argv: Sequence[str]) -> None:
-    run_cli = _load_contextseek_run_cli()
+    try:
+        run_cli = _load_contextseek_run_cli()
+    except MissingContextSeekError:
+        if _is_help_request(argv):
+            _show_missing_contextseek_help()
+            raise typer.Exit(0) from None
+        _raise_missing_contextseek()
     exit_code = run_cli(list(argv))
     raise typer.Exit(exit_code)
 
 
+def _is_help_request(argv: Sequence[str]) -> bool:
+    return list(argv) in ([], ["--help"], ["-h"])
+
+
 def _load_contextseek_run_cli() -> _RunCli:
     try:
-        from contextseek.cli import run_cli
+        module = importlib.import_module("contextseek.cli")
     except ModuleNotFoundError as exc:
         if exc.name and not exc.name.startswith("contextseek"):
             raise
-        _raise_missing_contextseek()
+        raise MissingContextSeekError from exc
+    run_cli = getattr(module, "run_cli", None)
     if not callable(run_cli):
         _raise_invalid_contextseek()
     return run_cli
@@ -110,10 +126,19 @@ def _load_contextseek_run_cli() -> _RunCli:
 def _raise_missing_contextseek() -> NoReturn:
     typer.echo(
         "The `agentseek ctx` commands require `agentseek-contextseek` in the current environment.\n"
-        "Install it with:  agentseek install agentseek-contextseek",
+        "Install it with:  agentseek plugin install agentseek-contextseek",
         err=True,
     )
     raise typer.Exit(1)
+
+
+def _show_missing_contextseek_help() -> None:
+    typer.echo(
+        "Usage: agentseek ctx [OPTIONS] COMMAND [ARGS]...\n\n"
+        "ContextSeek semantic context commands are available when "
+        "`agentseek-contextseek` is installed.\n\n"
+        "Install it with:  agentseek plugin install agentseek-contextseek"
+    )
 
 
 def _raise_invalid_contextseek() -> NoReturn:

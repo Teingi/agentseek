@@ -7,7 +7,10 @@ import logfire
 import logfire.integrations.loguru as logfire_loguru
 import typer
 
-from agentseek.cli import apply_agentseek_cli_overrides
+from agentseek.cli import (
+    AGENTSEEK_CLI_HELP,
+    apply_agentseek_runtime_command_layout,
+)
 from agentseek.env import (
     agentseek_config_file,
     apply_agentseek_env_aliases,
@@ -15,7 +18,6 @@ from agentseek.env import (
 )
 
 apply_agentseek_env_aliases()
-apply_agentseek_cli_overrides()
 
 
 def _logfire_console_config(enabled: bool) -> logfire.ConsoleOptions | Literal[False]:
@@ -43,6 +45,8 @@ def create_cli_app() -> typer.Typer:
     framework = BubFramework(config_file=agentseek_config_file())
     framework.load_hooks()
     app = framework.create_cli_app()
+    apply_agentseek_runtime_command_layout(app)
+    app.info.help = AGENTSEEK_CLI_HELP
 
     if not app.registered_commands:
 
@@ -55,7 +59,7 @@ def create_cli_app() -> typer.Typer:
 
 
 def _register_version_command(app: typer.Typer) -> None:
-    """Register ``version`` if not already provided by agentseek-cli plugin."""
+    """Register ``version`` if it is not already present."""
     command_name = "version"
     if any(getattr(command, "name", None) == command_name for command in app.registered_commands):
         return

@@ -3,7 +3,7 @@
 **2026-05-28**
 
 agentseek 是构建在 [Bub](https://github.com/bubbuild/bub) 之上的 **数据库原生 Agent
-Harness**。它为上游 kernel 套上了有主张的工作区默认值、项目生命周期命令，以及一组
+Harness**。它为上游 kernel 套上了有主张的工作区默认值、项目命令，以及一组
 精简的 contrib 插件，让运行时数据 —— context、tool call、trace、评测物料 —— 从一开始
 就能落在同一个可查询的存储底座上。
 
@@ -28,34 +28,23 @@ harness 而非 framework。
 
 ## agentseek 今天的样子
 
-agentseek 今天是两个顶层 Python 包，加上一组 uv workspace 内的 contrib 包。
+agentseek 今天是一个顶层 Python 包，加上一组 uv workspace 内的 contrib 包。
 
-**harness 发行版**（`agentseek`，源码位于 `src/agentseek/`）很小：
+**harness 发行版**（`agentseek`）拥有 runtime、项目命令和公开 CLI：
 
-- `apply_agentseek_env_aliases()` 把 `AGENTSEEK_*` 环境变量映射到 Bub 的
-  `BUB_*` 名字（`src/agentseek/env.py:56`）。
-- `apply_agentseek_cli_overrides()` 改写 onboarding banner、让 `chat` 启用
-  lifecycle channel、并把插件 sandbox 路径切到 `.agentseek/agentseek-project`
-  （`src/agentseek/cli.py:143`）。
-- `__main__.py` 启动 `BubFramework` 并向它请求一个 Typer CLI
-  （`src/agentseek/__main__.py:52`）。
+- 启动时将 `AGENTSEEK_*` 环境变量映射到 Bub 的 `BUB_*` 名字。
+- Bub 内置命令被替换为 AgentSeek 自己的实现（品牌化 onboard、lifecycle-aware chat、plugin 分组）。
+- 项目生命周期命令：`create / run / build / deploy / api / ctx / skills`。
+- 单个 `BubFramework` 启动并作为 runtime。
 
-第二个顶层包是 **`agentseek-cli`**，也就是自包含的项目生命周期 CLI，负责
-`create / run / build / deploy / api / ctx / skills`。单独安装时，它对应文档总览
-中的路径 A；与 harness 共存时，它会作为 Bub plugin 折叠进同一个 `agentseek`
-命令面。捆绑的硬依赖（`bub`、`bub-feishu`、`bub-mcp`、
-`agentseek-schedule-sqlalchemy`、`logfire`）和可通过 `agentseek install` 安装的
-可选插件（`agentseek-langchain`、`agentseek-contextseek` 等）列在
+捆绑的硬依赖和可通过 `agentseek plugin install` 安装的可选插件列在
 [包参考](../reference/packages.zh.md) 中。整个目录布局 —— `src/`、`contrib/`、
 `examples/`、`templates/`、`skills/`、`references/`、`docs/` ——
 见 [文件存放位置](../explanation/where-things-live.zh.md)。
 
-在使用方式上，文档把它表述为**两条路径**。路径 A 从
-`uv tool install agentseek-cli` 开始，适合在 host 上不安装 harness runtime
-的情况下做脚手架与生命周期操作。路径 B 则是在本仓库或生成项目里 `uv sync`
-之后运行 harness 本体；`agentseek chat`、`agentseek gateway`、
-`agentseek install` 以及可嵌入的 library 表面都在这里。完整取舍见
-[选择一个入口点](../explanation/choosing-an-entry-point.zh.md)。
+在使用方式上，文档只暴露一个命令面：`agentseek create/run/build/deploy` 管理项目，
+`agentseek chat/turn/gateway` 运行 runtime，`agentseek plugin/ctx/skills/api` 连接扩展和服务。
+完整布局见 [CLI 命令面](../explanation/cli-surface.zh.md)。
 
 ## "数据库原生"到底是什么意思
 
@@ -98,9 +87,8 @@ DeepAgents 或者自己的 orchestrator，把模型轮次走 `agentseek-langchai
 
 agentseek **打包了 [Bub](https://github.com/bubbuild/bub)** —— 同一套 hook 优先的
 turn pipeline、channel、tape、skills 和插件模型。`agentseek` 是发行版入口；
-`.agentseek/` 和 `AGENTSEEK_*` 是面向项目的默认值。除了由
-`apply_agentseek_cli_overrides`（`src/agentseek/cli.py:143`）
-组合的那三处 Typer monkeypatch 之外，Bub 没有被 fork 也没有被改。完整关系见
+`.agentseek/` 和 `AGENTSEEK_*` 是面向项目的默认值。除了 CLI 命令替换之外，Bub 没有被
+fork 也没有被改。完整关系见
 [agentseek 和 Bub 的关系](../explanation/bub-relationship.zh.md)。
 
 [Why we rewrote Bub](https://bub.build/posts/why-rewrite-bub/) 这篇文章解释了维护

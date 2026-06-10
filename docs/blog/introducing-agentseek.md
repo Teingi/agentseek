@@ -4,7 +4,7 @@
 
 agentseek is a **database-native Agent Harness** built on top of
 [Bub](https://github.com/bubbuild/bub). It packages the upstream kernel with
-opinionated workspace defaults, project-lifecycle commands, and a small set of
+opinionated workspace defaults, project commands, and a small set of
 contrib plugins so that runtime data — context, tool calls, traces, evaluation
 material — can live in a single, queryable substrate from the start.
 
@@ -33,38 +33,27 @@ contrib packages, or out to separate projects.
 
 ## What agentseek is now
 
-agentseek today is two top-level Python packages plus a uv workspace of contrib
+agentseek today is one top-level Python package plus a uv workspace of contrib
 packages.
 
-The **harness distribution** (`agentseek`, source under `src/agentseek/`) is small:
+The **harness distribution** (`agentseek`) owns the runtime, project commands, and public CLI:
 
-- `apply_agentseek_env_aliases()` maps `AGENTSEEK_*` env vars onto Bub's
-  `BUB_*` names (`src/agentseek/env.py:56`).
-- `apply_agentseek_cli_overrides()` brands the onboarding banner, enables
-  lifecycle channels in `chat`, and swaps the plugin sandbox path to
-  `.agentseek/agentseek-project` (`src/agentseek/cli.py:143`).
-- `__main__.py` boots a `BubFramework` and asks it for a Typer CLI
-  (`src/agentseek/__main__.py:52`).
+- `AGENTSEEK_*` env vars are mapped onto Bub's `BUB_*` names at startup.
+- Bub's builtin commands are replaced with AgentSeek implementations (branded onboard,
+  lifecycle-aware chat, plugin group).
+- Project lifecycle commands: `create / run / build / deploy / api / ctx / skills`.
+- A single `BubFramework` boots and serves as the runtime.
 
-The second top-level package is **`agentseek-cli`**, the self-contained project
-lifecycle CLI for `create / run / build / deploy / api / ctx / skills`.
-Installed on its own, it is Path A from the docs overview; installed alongside
-the harness, it folds into the same `agentseek` command surface as a Bub
-plugin. The bundled hard dependencies (`bub`, `bub-feishu`, `bub-mcp`,
-`agentseek-schedule-sqlalchemy`, `logfire`) and the optional plugins
-installable via `agentseek install` (`agentseek-langchain`,
-`agentseek-contextseek`, etc.) are listed in
-[Packages reference](../reference/packages.md). The full layout — `src/`,
-`contrib/`, `examples/`, `templates/`, `skills/`, `references/`, `docs/` — is
-mapped in [Where things live](../explanation/where-things-live.md).
+The bundled hard dependencies and optional plugins installable via
+`agentseek plugin install` are listed in [Packages reference](../reference/packages.md).
+The full layout — `src/`, `contrib/`, `examples/`, `templates/`, `skills/`,
+`references/`, `docs/` — is mapped in
+[Where things live](../explanation/where-things-live.md).
 
-Operationally, the docs expose this as **two paths**. Path A starts with
-`uv tool install agentseek-cli` when you need scaffolding or lifecycle commands
-without the harness runtime on the host. Path B runs the harness itself after
-`uv sync` in this repo or in a generated project; that is where `agentseek
-chat`, `agentseek gateway`, `agentseek install`, and the embeddable library
-surface live. The full split is in
-[Choosing an entry point](../explanation/choosing-an-entry-point.md).
+Operationally, the docs expose one command surface: `agentseek create/run/build/deploy`
+for project management, `agentseek chat/turn/gateway` for runtime, and
+`agentseek plugin/ctx/skills/api` for extensions and service bridges. The full
+layout is in [CLI surface](../explanation/cli-surface.md).
 
 ## Why "database-native" and what it means
 
@@ -114,8 +103,7 @@ one.
 agentseek **packages [Bub](https://github.com/bubbuild/bub)** — same hook-first
 turn pipeline, channels, tape, skills, and plugin model. `agentseek` is the
 distribution entry point; `.agentseek/` and `AGENTSEEK_*` are project-facing
-defaults. None of Bub is forked or patched beyond the three Typer monkeypatches
-composed by `apply_agentseek_cli_overrides` (`src/agentseek/cli.py:143`). The
+defaults. None of Bub is forked or patched beyond the CLI command replacements. The
 full relationship is laid out in
 [How agentseek relates to Bub](../explanation/bub-relationship.md).
 

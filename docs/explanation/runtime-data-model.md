@@ -6,7 +6,7 @@ runs: no
 verified_on: 2026-05-28
 sources:
   - src/agentseek/__main__.py
-  - src/agentseek/cli.py
+  - src/agentseek/cli/runtime.py
   - pyproject.toml
   - contrib/README.md
   - blog/introducing-agentseek.md
@@ -108,8 +108,8 @@ The default path comes from the alias layer:
   (`entrypoint.sh:11-15, 37-39`).
 
 MCP servers are good for tool integrations that should be **declared, not coded** — issue
-trackers, search backends, internal services. When the tool integration needs lifecycle
-behaviour or its own hooks, reach for a plugin.
+trackers, search backends, internal services. When the tool integration needs runtime hooks
+of its own, reach for a plugin.
 
 ### Plugins — the runtime extension surface
 
@@ -119,18 +119,18 @@ model providers, tape stores, schedulers, and tool packages.
 
 agentseek includes common runtime plugins for Feishu, MCP, tape-store OpenTelemetry,
 and SQLAlchemy-backed scheduling. Other plugins are installed on demand via
-`agentseek install`:
+`agentseek plugin install`:
 
 | Command | Adds |
 | --- | --- |
-| `agentseek install agentseek-ag-ui` | AG-UI channel adapter |
-| `agentseek install agentseek-langchain` | LangChain model routing |
-| `agentseek install bub-tapestore-otel@main` | Tape-first OpenTelemetry tracing |
-| `agentseek install agentseek-tapestore-oceanbase` | OceanBase tape storage |
-| `agentseek install agentseek-contextseek` | ContextSeek semantic context layer |
+| `agentseek plugin install agentseek-ag-ui` | AG-UI channel adapter |
+| `agentseek plugin install agentseek-langchain` | LangChain model routing |
+| `agentseek plugin install bub-tapestore-otel@main` | Tape-first OpenTelemetry tracing |
+| `agentseek plugin install agentseek-tapestore-oceanbase` | OceanBase tape storage |
+| `agentseek plugin install agentseek-contextseek` | ContextSeek semantic context layer |
 
 Plugins are installed into the **same Python environment** as agentseek; they are not
-sandboxed runtime units. The `agentseek install` sandbox at `.agentseek/agentseek-project`
+sandboxed runtime units. The `agentseek plugin install` sandbox at `.agentseek/agentseek-project`
 (see [How agentseek relates to Bub](bub-relationship.md)) is a uv project used to resolve and add
 plugins, not a runtime boundary.
 
@@ -141,10 +141,10 @@ A **channel** is the surface that takes a message in and streams a response out.
 Telegram are channels supplied by plugins. The `agentseek-ag-ui` plugin adds an AG-UI SSE
 channel adapter for front-ends like CopilotKit.
 
-agentseek's CLI override enables **all `*.lifecycle` channels** alongside whichever primary
-channel you asked for (`src/agentseek/cli.py:51-57, 83-112`). That is the mechanism that
+agentseek's CLI override enables **all Bub support channels (`*.lifecycle`)** alongside whichever primary
+channel you asked for (`src/agentseek/cli/runtime.py:51-57, 83-112`). That is the mechanism that
 lets MCP and other helpers boot inside an interactive `agentseek chat` session — they
-register themselves on a lifecycle channel and the manager wakes them up before the first
+register themselves on a Bub support channel and the manager wakes them up before the first
 turn.
 
 ## Why it is like this
@@ -170,7 +170,7 @@ turn.
 - If you want a **new place the agent can be reached from**, write or install a channel
   plugin.
 - Hard dependencies (Bub, `bub-feishu`, `bub-mcp`, `agentseek-schedule-sqlalchemy`) are
-  always present in any agentseek install; everything else is opt-in.
+  always present in any agentseek plugin install; everything else is opt-in.
 
 ## Related
 

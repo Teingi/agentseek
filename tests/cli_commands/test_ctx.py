@@ -10,8 +10,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 import pytest
-from agentseek_cli.commands import ctx as ctx_module
 from typer.testing import CliRunner
+
+from agentseek.cli.commands import ctx as ctx_module
 
 
 class _RunCliRecorder:
@@ -66,7 +67,22 @@ def test_propagates_upstream_exit_code(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_reports_missing_contextseek(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(ctx_module, "_load_contextseek_run_cli", ctx_module._raise_missing_contextseek)
+    monkeypatch.setattr(
+        ctx_module,
+        "_load_contextseek_run_cli",
+        lambda: (_ for _ in ()).throw(ctx_module.MissingContextSeekError()),
+    )
     result = CliRunner().invoke(ctx_module.app, ["add"])
     assert result.exit_code == 1
     assert "contextseek" in result.stderr
+
+
+def test_missing_contextseek_help_is_discoverable(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        ctx_module,
+        "_load_contextseek_run_cli",
+        lambda: (_ for _ in ()).throw(ctx_module.MissingContextSeekError()),
+    )
+    result = CliRunner().invoke(ctx_module.app, ["--help"])
+    assert result.exit_code == 0
+    assert "agentseek plugin install agentseek-contextseek" in result.output
