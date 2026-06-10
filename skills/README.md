@@ -1,7 +1,58 @@
 # Skills
 
-This directory contains a curated collection of skills designed to address tasks across various fields.
+Curated skills for agent-assisted development with AgentSeek templates.
 
-By default, these skills are not included in the agentseek release.
+## Install
 
-You can install them in your project’s `.agents/skills` directory using `npx skills` or a similar command.
+### Via `agentseek` CLI (recommended)
+
+The `agentseek skills` subcommand defaults to this repo — no need to type the source:
+
+```bash
+# All skills, globally
+agentseek skills add --all --global
+
+# Specific skill
+agentseek skills add --skill langsmith-trace --global --yes
+
+# Specific agent
+agentseek skills add --all --global --agent claude-code
+```
+
+### Via `npx skills` directly
+
+```bash
+npx skills add ob-labs/agentseek --all --global
+npx skills add ob-labs/agentseek --skill langsmith-trace --global --yes
+```
+
+### Project-local (for shared repos)
+
+```bash
+agentseek skills add --all
+```
+
+Omit `--global` to install into the current project only.
+
+### Standalone copies (CI / airgapped)
+
+```bash
+agentseek skills add --all --global --copy
+```
+
+## Available Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `langsmith-trace` | LangSmith CLI setup, tracing, and trace debugging for AgentSeek backends |
+| `langchain-dev-guide` | LangChain / LangGraph / DeepAgents pitfalls and fixes, plus CN model integration (DeepSeek, Qwen, GLM) |
+| `github-repo-cards` | Generate visual repo cards for documentation and social sharing |
+
+## Update & Remove
+
+```bash
+agentseek skills update           # update all
+agentseek skills remove           # interactive remove
+npx skills update -g              # update global (alternative)
+npx skills remove --all --global  # remove everything
+```

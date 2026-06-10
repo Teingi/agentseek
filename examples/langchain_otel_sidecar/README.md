@@ -1,7 +1,5 @@
 # LangChain OTEL + agentseek Sidecar
 
-English | [中文](README.zh.md)
-
 This is a **How-to Guide**. It shows how to keep a LangChain application as a normal business
 service, export OpenTelemetry traces to Jaeger, and use an `agentseek` sidecar to analyze those
 traces through `opentelemetry-mcp-server`.
@@ -96,11 +94,11 @@ both FastAPI entry spans and LangChain/tool-related spans.
 
 ## Step 4: Use the agentseek Sidecar to Analyze the Traces
 
-The simplest path is a one-shot `agentseek run` inside the sidecar:
+The simplest path is a one-shot `agentseek turn` inside the sidecar:
 
 ```bash
 docker compose -f examples/langchain_otel_sidecar/docker-compose.yml exec agentseek-sidecar \
-  uv run --no-sync --no-env-file agentseek run \
+  uv run --no-sync --no-env-file agentseek turn \
   "Use your OpenTelemetry tools to inspect the latest traces from service langchain-otel-demo. Summarize the request flow, the slowest spans, tool usage, token usage, and any errors."
 ```
 
@@ -152,7 +150,7 @@ docker compose -f examples/langchain_otel_sidecar/docker-compose.yml ps
 At runtime, verify that:
 
 - Jaeger shows the `langchain-otel-demo` service.
-- `agentseek run` can call `mcp.otel_*` tools.
+- `agentseek turn` can call `mcp.otel_*` tools.
 - The sidecar answer can describe trace structure, latency hotspots, and any failures.
 
 ## Cleanup
@@ -172,6 +170,4 @@ This example is not the right fit when:
 
 Related examples:
 
-- Direct LangChain integration: [`../langchain_deepagents/README.md`](../langchain_deepagents/README.md)
-- Remote `langgraph dev`: [`../langchain_cli_remote_agent/README.md`](../langchain_cli_remote_agent/README.md)
-- AG-UI + LangChain: [`../ag_ui_langchain/README.md`](../ag_ui_langchain/README.md)
+- agentseek-api remote agent: [`../agentseek_api_remote_agent/README.md`](../agentseek_api_remote_agent/README.md)

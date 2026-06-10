@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import sys
 from typing import Literal
 
@@ -8,7 +7,10 @@ import logfire
 import logfire.integrations.loguru as logfire_loguru
 import typer
 
-from agentseek.cli import apply_agentseek_cli_overrides
+from agentseek.cli import (
+    AGENTSEEK_CLI_HELP,
+    apply_agentseek_runtime_command_layout,
+)
 from agentseek.env import (
     agentseek_config_file,
     apply_agentseek_env_aliases,
@@ -16,18 +18,6 @@ from agentseek.env import (
 )
 
 apply_agentseek_env_aliases()
-apply_agentseek_cli_overrides()
-
-
-def _maybe_enable_observability() -> None:
-    try:
-        observability = importlib.import_module("agentseek_observability.plugin")
-    except ModuleNotFoundError:
-        return
-
-    instrument = getattr(observability, "instrument_agentseek_observability", None)
-    if callable(instrument):
-        instrument()
 
 
 def _logfire_console_config(enabled: bool) -> logfire.ConsoleOptions | Literal[False]:
@@ -46,7 +36,6 @@ def _instrument_agentseek() -> None:
     settings = get_agentseek_settings()
     logfire.configure(send_to_logfire=False, console=_logfire_console_config(settings.console))
     logger.add(logfire_loguru.LogfireHandler(), format="{message}")
-    _maybe_enable_observability()
 
 
 def create_cli_app() -> typer.Typer:
@@ -56,6 +45,8 @@ def create_cli_app() -> typer.Typer:
     framework = BubFramework(config_file=agentseek_config_file())
     framework.load_hooks()
     app = framework.create_cli_app()
+    apply_agentseek_runtime_command_layout(app)
+    app.info.help = AGENTSEEK_CLI_HELP
 
     if not app.registered_commands:
 
@@ -63,7 +54,22 @@ def create_cli_app() -> typer.Typer:
         def _help() -> None:
             typer.echo("No CLI command loaded.")
 
+    _register_version_command(app)
     return app
+
+
+def _register_version_command(app: typer.Typer) -> None:
+    """Register ``version`` if it is not already present."""
+    command_name = "version"
+    if any(getattr(command, "name", None) == command_name for command in app.registered_commands):
+        return
+
+    from agentseek.cli import agentseek_version
+
+    @app.command(command_name)
+    def version_cmd() -> None:
+        """Show version information."""
+        typer.echo(f"agentseek {agentseek_version()}")
 
 
 app = create_cli_app()

@@ -5,7 +5,7 @@ categories:
         description: AG-UI channel adapter for `agentseek gateway`, translating Bub stream events into AG-UI SSE events.
         description_zh: 面向 `agentseek gateway` 的 AG-UI channel 适配器，把 Bub 流式事件转换成 AG-UI SSE 事件。
         entry_point: ag-ui
-        install: uv sync --extra ag-ui
+        install: agentseek plugin install agentseek-ag-ui
         repo_url: https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-ag-ui
         readme_url: https://github.com/ob-labs/agentseek/blob/main/contrib/agentseek-ag-ui/README.md
         badges:
@@ -19,24 +19,22 @@ categories:
           - frontend
           - ui
 
-      - name: agentseek-observability
-        description: Logfire-backed tracing that follows the `any-llm -> republic -> bub` runtime path.
-        description_zh: 基于 Logfire 的追踪集成，覆盖 `any-llm -> republic -> bub` 这条运行时链路。
-        entry_point: observability
-        install: uv sync --extra observability
-        repo_url: https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-observability
-        readme_url: https://github.com/ob-labs/agentseek/blob/main/contrib/agentseek-observability/README.md
+      - name: agentseek-contextseek
+        description: Semantic context layer that retrieves relevant past knowledge before each model turn and writes new knowledge back afterward.
+        description_zh: 语义化的上下文层，在每次模型轮次前检索相关的历史知识，并在轮次后回写新知识。
+        entry_point: contextseek
+        install: agentseek plugin install agentseek-contextseek
+        repo_url: https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-contextseek
+        readme_url: https://github.com/ob-labs/agentseek/blob/main/contrib/agentseek-contextseek/README.md
         badges:
           - label: plugin
         tags:
-          - observability
-          - logfire
-          - telemetry
-          - tracing
-          - otel
-          - any-llm
-          - republic
-          - bub
+          - context
+          - contextseek
+          - semantic
+          - memory
+          - retrieval
+          - knowledge
 
       - name: agentseek-schedule-sqlalchemy
         description: SQLAlchemy-backed APScheduler job persistence exposed as the Bub `schedule` plugin.
@@ -60,7 +58,7 @@ categories:
         description: SQLAlchemy tape storage with OceanBase compatibility and optional vector retrieval.
         description_zh: 兼容 OceanBase 的 SQLAlchemy tape storage，并支持可选的向量检索能力。
         entry_point: tapestore-oceanbase
-        install: uv sync --extra oceanbase
+        install: agentseek plugin install agentseek-tapestore-oceanbase
         repo_url: https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-tapestore-oceanbase
         readme_url: https://github.com/ob-labs/agentseek/blob/main/contrib/agentseek-tapestore-oceanbase/README.md
         badges:
@@ -78,7 +76,7 @@ categories:
         description: Delegates Bub model turns to a LangChain `Runnable` while keeping agentseek transport and persistence in place.
         description_zh: 将 Bub 的模型轮次委托给 LangChain `Runnable`，同时保留 agentseek 的传输层与持久化能力。
         entry_point: langchain
-        install: uv sync --extra langchain
+        install: agentseek plugin install agentseek-langchain
         repo_url: https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-langchain
         readme_url: https://github.com/ob-labs/agentseek/blob/main/contrib/agentseek-langchain/README.md
         badges:

@@ -2,50 +2,85 @@
 hide_sidebar: true
 ---
 
-<div class="landing-hero">
-  <p class="landing-kicker">$ agentseek</p>
-  <h1>面向真实项目封装的数据库原生 Agent Runtime</h1>
-  <p class="landing-lead">
-    agentseek 在 Bub 之上提供项目级默认配置、`AGENTSEEK_*` 别名、内置技能以及以工作区为中心的运行时布局。
-  </p>
-  <div class="landing-actions">
-    <a class="terminal-button primary" href="docs/getting-started/">快速开始</a>
-    <a class="terminal-button" href="docs/">阅读文档</a>
-    <a class="terminal-button" href="hub/">浏览目录</a>
-  </div>
-</div>
+# AgentSeek 文档
 
-## 快速开始
+AgentSeek 是数据库原生的 Agent Harness，用来构建运行时数据可持久化、可查询、可运维的
+agent 应用。
+
+这套文档主要回答三个问题：
+
+1. 我应该从哪里开始？
+2. 当前任务应该读哪篇指南？
+3. 首次跑通后，细节参考在哪里？
+
+## 快速入口
+
+| 目标 | 从这里开始 |
+| --- | --- |
+| 创建模板项目 | [构建你的第一个 harness 应用](tutorials/02-first-harness-app.zh.md) |
+| 运行 AgentSeek 本身 | [通过 CLI 快速演示](tutorials/01-quick-demo-cli.zh.md) |
+| 配置模型凭证 | [配置模型提供方](how-to/configure-model.zh.md) |
+| 本地运行生成项目 | [本地运行](how-to/run-locally.zh.md) |
+| 构建和部署生成项目 | [构建和部署](how-to/build-and-deploy.zh.md) |
+
+## 先选一个流程
+
+| 流程 | 从这里开始 | 适合场景 |
+| --- | --- |
+| 从模板创建项目 | [构建你的第一个 harness 应用](tutorials/02-first-harness-app.zh.md) | 你需要一个可运行的应用脚手架。 |
+| 运行 AgentSeek 本身 | [通过 CLI 快速演示](tutorials/01-quick-demo-cli.zh.md) | 你要评估或运维 harness runtime。 |
+
+首次跑通之后，再按下一步任务选择：
+
+| 需要 | 从这里开始 |
+| --- | --- |
+| 最小 [LangChain](https://github.com/langchain-ai/langchain) 应用 | [模板参考](reference/templates.zh.md)里的 `langchain/markdown-messages`。 |
+| 完整产品形态的生成项目 | `langchain/default`，然后读[本地运行](how-to/run-locally.zh.md)和[构建和部署](how-to/build-and-deploy.zh.md)。 |
+| [DeepAgents](https://docs.langchain.com/oss/deepagents) 项目 | 在[模板参考](reference/templates.zh.md)里比较 `deepagents/research`、`deepagents/content-builder` 和 `langchain/sandbox`。 |
+| 不带 LangChain 的轻量应用 | 从 `bub/default` 模板开始。 |
+| 要加入持久记忆 | 使用 [agentseek-contextseek](https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-contextseek) 或 [ContextSeek](https://github.com/ob-labs/contextseek)。 |
+| 要选择数据库后端 | 阅读 [langchain-oceanbase](https://github.com/oceanbase/langchain-oceanbase) 和[运行时数据模型](explanation/runtime-data-model.zh.md)。 |
+
+## 参考细节
+
+| 需要 | 参考 |
+| --- | --- |
+| 理解命令的组织方式 | [命令概览](explanation/cli-surface.zh.md) |
+| 查看所有命令和参数 | [CLI 参考](reference/cli.zh.md) |
+| 查看所有模板 | [模板参考](reference/templates.zh.md) |
+| 理清包和仓库边界 | [包参考](reference/packages.zh.md) |
+
+## 常用命令
 
 ```bash
-git clone https://github.com/ob-labs/agentseek.git
-cd agentseek
-uv sync
-uv run agentseek --help
+# Browse templates
+uvx agentseek create --list-templates
+
+# Create a minimal LangChain project
+uvx agentseek create langchain/markdown-messages
+
+# Run AgentSeek itself
+uv tool install agentseek
+agentseek chat
 ```
 
-先配置一个模型，再启动本地会话：
-
-```bash
-export AGENTSEEK_MODEL=openrouter:free
-export AGENTSEEK_API_KEY=sk-or-v1-your-key
-export AGENTSEEK_API_BASE=https://openrouter.ai/api/v1
-uv run agentseek chat
-```
-
-## 可以从这里继续
+## 文档地图
 
 <div class="terminal-grid terminal-grid-2">
   <div class="terminal-card">
-    <h3><a href="docs/">文档</a></h3>
-    <p>查看主发行版的安装、配置和扩展说明。</p>
+    <h3><a href="tutorials/">教程</a></h3>
+    <p>第一个应用和常见项目设置的引导式演练。</p>
   </div>
   <div class="terminal-card">
-    <h3><a href="hub/">目录</a></h3>
-    <p>浏览本仓库以及更广泛 Bub 生态中的插件、技能和相关链接。</p>
+    <h3><a href="how-to/">操作指南</a></h3>
+    <p>模型、本地运行、部署、gateway 和 ContextSeek 的任务式食谱。</p>
   </div>
   <div class="terminal-card">
-    <h3><a href="blog/">博客</a></h3>
-    <p>阅读项目介绍、迁移说明以及围绕真实工作流的实践文章。</p>
+    <h3><a href="explanation/">概念解释</a></h3>
+    <p>包边界、Bub、LangChain、扩展模型和运行时数据的设计说明。</p>
+  </div>
+  <div class="terminal-card">
+    <h3><a href="reference/">参考</a></h3>
+    <p>CLI 参数、模板、包、环境变量和文件布局的精确表格。</p>
   </div>
 </div>

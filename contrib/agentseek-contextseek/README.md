@@ -8,7 +8,7 @@
 | Python package | `agentseek_contextseek` |
 | Bub entry point | `contextseek` |
 | Config surface | `AGENTSEEK_CTX_*` env vars |
-| Install path | `uv sync --extra context` or `uv pip install 'agentseek[context]'` |
+| Install path | `agentseek plugin install agentseek-contextseek` |
 | Test target | `contrib/agentseek-contextseek/tests/` |
 
 ## When To Use It
@@ -19,10 +19,10 @@ This package does **not** own contextseek's storage, embedding, or evolution log
 
 ## Install
 
-Via agentseek optional extra (recommended):
+Via the agentseek plugin installer (recommended):
 
 ```bash
-uv pip install 'agentseek[context]'
+agentseek plugin install agentseek-contextseek
 ```
 
 Standalone from workspace:
@@ -31,12 +31,7 @@ Standalone from workspace:
 uv pip install './contrib/agentseek-contextseek'
 ```
 
-CLI note: `agentseek ctx ...` commands are provided by
-[`agentseek-cli`](../agentseek-cli/README.md). In workspace/dev installs, use:
-
-```bash
-uv sync --extra context
-```
+CLI note: `agentseek ctx ...` is part of the main `agentseek` command surface.
 
 ## Configure
 
