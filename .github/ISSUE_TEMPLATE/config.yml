@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: 💬 Questions & Discussion
+    url: https://github.com/ob-labs/agentseek/discussions
+    about: For open-ended questions, ideas, and design discussion (not a specific template request).
   - name: 📋 Release Board
     url: https://github.com/orgs/ob-labs/projects/1
     about: See what the AgentSeek family is shipping this cycle.
