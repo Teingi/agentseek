@@ -1,7 +1,7 @@
 name: "🧩 App Template Request"
 description: "Request a new AgentSeek app template, and tell us what it needs to support (skills, MCP, HITL, streaming, …)"
 title: "[Template]: "
-labels: ["template-request", "triage"]
+labels: ["template-request", "status:triage"]
 projects: ["ob-labs/1"]
 body:
   - type: markdown

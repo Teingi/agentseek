@@ -1,86 +1,67 @@
 ---
+title: AgentSeek documentation
+type: explanation
+audience: [A1, A2, A3, A4, A5]
+runs: no
+verified_on: 2026-06-12
 hide_sidebar: true
+sources:
+  - README.md
+  - mkdocs.yml
+  - pyproject.toml
+  - src/agentseek/cli/runtime.py
 ---
 
-# AgentSeek Documentation
+# AgentSeek documentation
 
-AgentSeek is a database-native Agent Harness for building agent applications
-whose runtime data is durable, queryable, and ready to operate.
+AgentSeek turns agent runtime data into a database workload: turns, context,
+tool calls, tasks, feedback, checkpoints, memory, and observability data stay
+queryable instead of being scattered across logs and side systems.
 
-Use these docs to answer three questions:
-
-1. Where should I start?
-2. Which guide covers the task in front of me?
-3. Where do I find reference details after the first run works?
-
-## Fast Paths
-
-| Goal | Start here |
-| --- | --- |
-| Create a template project | [Build your first harness app](tutorials/02-first-harness-app.md) |
-| Run AgentSeek itself | [Quick demo via the CLI](tutorials/01-quick-demo-cli.md) |
-| Configure model credentials | [Configure model providers](how-to/configure-model.md) |
-| Run a generated project locally | [Run locally](how-to/run-locally.md) |
-| Build and deploy a generated project | [Build and deploy](how-to/build-and-deploy.md) |
-
-## Start With One Flow
-
-| Flow | Start here | Use it when |
-| --- | --- |
-| Create a project from templates | [Build your first harness app](tutorials/02-first-harness-app.md) | You want a working application scaffold. |
-| Run AgentSeek itself | [Quick demo via the CLI](tutorials/01-quick-demo-cli.md) | You want to evaluate or operate the harness runtime. |
-
-After the first run works, continue with the guide that matches the next job:
-
-| Need | Start here |
-| --- | --- |
-| A minimal [LangChain](https://github.com/langchain-ai/langchain) app | `langchain/markdown-messages` in [Templates reference](reference/templates.md). |
-| A full product-shaped generated app | `langchain/default`, then [Run locally](how-to/run-locally.md) and [Build and deploy](how-to/build-and-deploy.md). |
-| A [DeepAgents](https://docs.langchain.com/oss/deepagents) project | Compare `deepagents/research`, `deepagents/content-builder`, and `langchain/sandbox` in [Templates reference](reference/templates.md). |
-| A lightweight app without LangChain | Start with the `bub/default` template. |
-| Adding persistent memory | Use [agentseek-contextseek](https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-contextseek) or the [ContextSeek](https://github.com/ob-labs/contextseek) project. |
-| Choosing a database backend | Read [langchain-oceanbase](https://github.com/oceanbase/langchain-oceanbase) and [runtime data model](explanation/runtime-data-model.md). |
-
-## Reference Details
-
-| Need | Reference |
-| --- | --- |
-| How commands are organized | [Command overview](explanation/cli-surface.md) |
-| Every command and flag | [CLI reference](reference/cli.md) |
-| Every template | [Templates reference](reference/templates.md) |
-| Package and repository boundaries | [Packages reference](reference/packages.md) |
-
-## Common Commands
+## Minimal Commands
 
 ```bash
-# Browse templates
-uvx agentseek create --list-templates
-
-# Create a minimal LangChain project
-uvx agentseek create langchain/markdown-messages
-
-# Run AgentSeek itself
-uv tool install agentseek
-agentseek chat
+uvx agentseek create deepagents/default --no-input
+cd my_deepagent
+cp .env.example .env
+uv sync
+uv pip install -r requirements.txt
+export PYTHONPATH=src
+export AGENTSEEK_LANGCHAIN_SPEC=my_deepagent.demo_binding:build_spec
+export AGENTSEEK_AG_UI_PORT=18088
+uv run agentseek gateway --enable-channel ag-ui
 ```
 
-## Documentation Map
+Use [Quick demo via the CLI](tutorials/01-quick-demo-cli.md) when you want to
+try the harness before creating a project.
+
+## Project Lifecycle
 
 <div class="terminal-grid terminal-grid-2">
   <div class="terminal-card">
-    <h3><a href="tutorials/">Tutorials</a></h3>
-    <p>Guided walkthroughs for the first app and common project setup.</p>
+    <h3><a href="tutorials/02-first-harness-app/">Create</a></h3>
+    <p>Start from a template when you need an editable harness app.</p>
   </div>
   <div class="terminal-card">
-    <h3><a href="how-to/">How-to guides</a></h3>
-    <p>Task-focused recipes for models, local runs, deployment, gateway, and ContextSeek.</p>
+    <h3><a href="how-to/run-locally/">Run</a></h3>
+    <p>Run the generated project locally after model credentials are set.</p>
   </div>
   <div class="terminal-card">
-    <h3><a href="explanation/">Explanation</a></h3>
-    <p>Design notes for package boundaries, Bub, LangChain, extensions, and runtime data.</p>
+    <h3><a href="tutorials/03-add-a-skill-and-mcp/">Extend</a></h3>
+    <p>Add project-local skills, MCP tools, plugins, or ContextSeek when the app needs them.</p>
   </div>
   <div class="terminal-card">
-    <h3><a href="reference/">Reference</a></h3>
-    <p>Precise tables for CLI flags, templates, packages, environment variables, and file layout.</p>
+    <h3><a href="how-to/build-and-deploy/">Ship</a></h3>
+    <p>Build the image and generate deployment manifests from the project root.</p>
   </div>
 </div>
+
+## After the first run
+
+- Use `deepagents/default` when you want the recommended AgentSeek harness app.
+- Use `bub/default` when you want the lightest harness app without LangChain.
+- Use `langchain/default` when a LangChain app should enter the AgentSeek runtime.
+- Use `deepagents/research` or `deepagents/content-builder` for DeepAgents-shaped products.
+- Add [ContextSeek](how-to/use-contextseek.md) when memory should become a first-class runtime capability.
+- Read [Runtime data model](explanation/runtime-data-model.md) before choosing a durable storage backend.
+- Browse [Hub](hub.md) for bundled and contrib integrations.

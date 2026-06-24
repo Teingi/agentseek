@@ -42,6 +42,48 @@ If you are proposing a new feature:
 - Remember that this is a volunteer-driven project, and that contributions
   are welcome :)
 
+# Issue Labels
+
+We label issues along a few independent axes so you can filter the backlog.
+Pick a type and a component; the other axes are optional context.
+
+GitHub labels are flat, so each axis is a name prefix sharing one color.
+
+## Type — what kind of work it is
+
+- `bug` — something isn't working
+- `enhancement` — new feature or request
+- `documentation` — docs additions or improvements
+- `template-request` — request for a new app template
+- `question` — further information is requested
+
+## `comp:` — which part of the project it touches
+
+- `comp:cli` — CLI commands and project lifecycle
+- `comp:templates` — app templates and the template registry
+- `comp:skills` — agent skills
+- `comp:observability` — tracing, logging, and observability
+- `comp:runtime` — AgentSeek runtime and project profile
+
+## `priority:` — backlog ordering
+
+- `priority:high` / `priority:medium` / `priority:low`
+
+Most issues leave this unset; an absent priority is not a signal.
+
+## `status:` — workflow state
+
+- `status:triage` — needs initial review and scoping
+- `status:needs-design` — design or a decision is required before implementation
+- `status:blocked` — blocked by another issue or an external dependency
+
+## Newcomer signals
+
+- `good first issue` — small, well-scoped, and doable without deep
+  knowledge of the codebase. The best place to start.
+- `help wanted` — open to outside contributors, but expect to need some
+  product or domain knowledge.
+
 # Get Started!
 
 Ready to contribute? Here's how to set up `agentseek` for local development.

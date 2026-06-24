@@ -222,3 +222,24 @@
   )
   ```
 - **Lessons learned**: The core design decision for memory is choosing the namespace — it determines "who can see what." User-scoped uses `user.identity`, Agent-scoped uses `assistant_id`, org-scoped uses `org_id`. Shared memory must be read-only, otherwise there's a cross-user prompt-injection risk.
+
+## Issue 6: A long `SKILL.md` gets silently truncated — the Agent only reads the first 100 lines
+
+- **Symptom**: You wrote a 300+ line `SKILL.md`, but the Agent behaves as if it never saw the later sections (workflows, examples, edge cases at the bottom are ignored). No error is raised — the skill just appears to "half work," and it takes a long time to realize content is missing rather than wrong.
+- **Cause**: The built-in `read_file` tool defaults to reading only **100 lines** (`DEFAULT_READ_LIMIT = 100` in `deepagents/middleware/filesystem.py`). Skills use *progressive disclosure*: only the name + description are injected into the system prompt, and the Agent is expected to `read_file` the full `SKILL.md` on demand. When the file exceeds 100 lines, that default read silently cuts it off — the tail is never loaded into context, and nothing flags the truncation.
+- **Solution**:
+  - **Tell the model to pass an explicit `limit`.** The official `SKILLS_SYSTEM_PROMPT` already instructs this — its progressive-disclosure step reads: *"Use `read_file` on the path… Pass `limit=1000` since the default of 100 lines is too small for most skill files."* If you override `SkillsMiddleware(system_prompt=...)` with your own template, **keep that `limit=1000` instruction** (or higher) or you reintroduce the bug. If you see truncation in practice, bump the limit in the prompt (e.g. `limit=500`/`1000`) to cover your largest skill file:
+    ```python
+    from deepagents.middleware.skills import SkillsMiddleware
+
+    # When customizing the prompt, preserve the explicit-limit guidance and
+    # the three required slots: {skills_locations} {skills_load_warnings} {skills_list}
+    middleware = SkillsMiddleware(
+        backend=backend,
+        sources=["/skills/"],
+        system_prompt=my_template,  # must tell the model: read_file(..., limit=1000)
+    )
+    ```
+  - **Or keep `SKILL.md` short and offload detail to reference files** (the pattern this very skill uses): a lean `SKILL.md` that fits in ~100 lines plus a `reference/` directory the Agent reads only when a section applies. This sidesteps the limit entirely and keeps the always-loaded metadata cheap.
+  - Note: `limit` counts *source* lines; lines longer than 5,000 chars are split with continuation markers (`5.1`, `5.2`, …) that do **not** consume the budget. For very large files, paginate with `offset` (`read_file(file_path=..., offset=100, limit=200)`).
+- **Lessons learned**: This failure is insidious because it's silent — there's no error, the skill just under-performs, so the instinct is to blame the prompt wording or the model rather than a truncated read. Two preventions: (1) keep `SKILL.md` lean and push depth into `reference/` files, and (2) if a skill file must be long, ensure the system prompt forces a large `limit`. Treat 100 lines as a hard default ceiling on anything the Agent auto-reads.

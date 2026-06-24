@@ -1,107 +1,62 @@
-# 认识 agentseek
+---
+title: 认识 AgentSeek
+type: explanation
+audience: [A1, A2, A5]
+runs: no
+verified_on: 2026-06-15
+sources:
+  - README.zh.md
+  - docs/explanation/what-agentseek-is.zh.md
+  - docs/explanation/runtime-data-model.zh.md
+  - docs/explanation/bub-relationship.zh.md
+  - docs/explanation/langchain-relationship.zh.md
+---
 
-**2026-05-28**
+# 认识 AgentSeek
 
-agentseek 是构建在 [Bub](https://github.com/bubbuild/bub) 之上的 **数据库原生 Agent
-Harness**。它为上游 kernel 套上了有主张的工作区默认值、项目命令，以及一组
-精简的 contrib 插件，让运行时数据 —— context、tool call、trace、评测物料 —— 从一开始
-就能落在同一个可查询的存储底座上。
+**2026-06-15**
 
-这篇文章解释项目的来历、它在 2026-05 实际是什么样子，以及为什么我们坚持把它定位为
-harness 而非 framework。
+AgentSeek 是面向 agent 应用的 database-native harness。它帮团队把运行时数据变成
+数据库工作负载：turn、context、工具调用、任务、反馈、checkpoint、memory 和观测数据
+都保持可查询，而不是散落在日志和外围系统里。
 
-## 从 bubseek 到 agentseek
+这个定位就是项目本身。AgentSeek 不是另一个 agent framework。它是围绕 framework
+的一层：项目如何创建、turn 如何通过 channel 进入、哪些扩展参与运行、运行时事实最终
+落在哪里。
 
-我们最早以 **bubseek** 的名字发布探索性的工作。方向 —— 在 **seekdb** 之上做内生可
-观测和 insight 风格的 agent —— 在 OceanBase 工程博客上有完整阐述：
-[Intrinsic Observability: Build an Insight Agent on seekdb](https://en.oceanbase.com/blog/26947000576)。
+## 从 bubseek 到 AgentSeek
 
-边界逐渐清晰之后，两件事变得明显：
+最早的工作叫 `bubseek`，探索的是 seekdb 上的 insight 风格 agent。后来我们发现，真正
+有价值的部分比单个垂直 agent 更通用：任何严肃的 agent 项目都需要一个持久运行时底座。
 
-- 真正有趣的对象不是某个垂直 agent，而是支撑每一次 agent 运行的 **运行时底座**。
-- 这个底座的通用发行版，只要做得足够小、允许各家接入自己的模型、通道和存储，价值
-  远不止 insight 场景。
+AgentSeek 把这个底座保持得很小。Bub 提供 runtime kernel：turn、channel、hook、
+tape、skill 和 plugin。AgentSeek 在它之上提供项目默认值、模板、contrib integrations
+和公开的 `agentseek` 命令。
 
-于是我们 **改名为 agentseek**，把项目聚焦到 harness 这一层 —— 决定数据存在哪里、
-插件如何加载、工作区长什么样的那一层。垂直部分要么沉到上游 Bub，要么进了 contrib
-包，要么独立成项目。
+## 为什么是 database-native
 
-## agentseek 今天的样子
+Agent run 会先产生有价值的事实，然后才产生稳定产品。消息、工具调用、trace、
+checkpoint、反馈和 memory，之后都会被调试、回放、评估和训练继续使用。
 
-agentseek 今天是一个顶层 Python 包，加上一组 uv workspace 内的 contrib 包。
+如果每个消费方都维护自己的日志或旁路管道，项目会越来越难运维。AgentSeek 选择把
+tape 当作持久运行时事实流。项目可以从本地轻量存储开始；当需要更强的后端时，同一种
+数据形状可以进入 OceanBase、seekdb 或其他受支持的 store。
 
-**harness 发行版**（`agentseek`）拥有 runtime、项目命令和公开 CLI：
+Database-native 不等于 database-coupled。Harness 定义运行时形状和扩展点；存储后端
+仍然是部署选择。
 
-- 启动时将 `AGENTSEEK_*` 环境变量映射到 Bub 的 `BUB_*` 名字。
-- Bub 内置命令被替换为 AgentSeek 自己的实现（品牌化 onboard、lifecycle-aware chat、plugin 分组）。
-- 项目生命周期命令：`create / run / build / deploy / api / ctx / skills`。
-- 单个 `BubFramework` 启动并作为 runtime。
+## 为什么是 harness
 
-捆绑的硬依赖和可通过 `agentseek plugin install` 安装的可选插件列在
-[包参考](../reference/packages.zh.md) 中。整个目录布局 —— `src/`、`contrib/`、
-`examples/`、`templates/`、`skills/`、`references/`、`docs/` ——
-见 [文件存放位置](../explanation/where-things-live.zh.md)。
+LangChain、DeepAgents 这样的 framework 是开发者构建 graph、agent、tool 和 model call
+的地方。AgentSeek 放在应用周围，处理服务交付、语义 context、runtime 扩展和可查询的
+运行时数据。
 
-命令按使用场景分组：`agentseek create/run/build/deploy` 管理项目，
-`agentseek chat/turn/gateway` 运行 runtime，`agentseek plugin/ctx/skills/api` 连接扩展和服务。
-详见[命令概览](../explanation/cli-surface.zh.md)。
-
-## "数据库原生"到底是什么意思
-
-很长一段时间里，数据库主要装 **业务结果**：订单、用户、内容、索引、分析表。Agent
-运行的产物则散落在数据库 **之外**：session context 在一个地方，tool call 和 trace
-在另一个地方，日志和评测物料又在更多管道里。常见形式包括 JSONL 本地流、Markdown
-笔记，偶尔有 SQLite sidecar。
-
-这套做法处理一次性任务还可以。一旦同样的数据要喂给 **调试、回放、对比、评测、训练**，
-成本就上去了 —— 每一个新消费方都要重新跑一遍 ingestion 管道。
-
-agentseek 的赌注是：运行时产物一开始就应该落在 **同一个可持久的层** 上。具体来说，
-这一层就是 Bub 的 **tape**：一条 append-only 的事实流，按顺序记录输入、模型调用、
-工具调用与结果、anchor、以及派生视图。模型本身在 [Tape Systems](https://tape.systems/)
-有完整描述，作为运行时数据形态则在
-[运行时数据模型](../explanation/runtime-data-model.zh.md) 里说明。
-
-两个推论自然落下来，我们也据此组织整个项目：
-
-1. **运行时数据天然可查。** "这一类 tool call 随时间的分布"、"这次失败前后的状态"、
-   "触发过 fallback 的轨迹" —— 全部都是对 tape store 的 SQL（可选向量）查询，不再
-   需要额外的索引层。
-2. **Context、observability、下游再消费共用同一个底座。** harness 负责把 **写入
-   路径和语义** 说清楚；具体落到本地 SQLite、OceanBase 还是
-   [seekdb](https://github.com/oceanbase/seekdb)，是部署和 contrib 的事情。
-   OceanBase 后端以 `agentseek-tapestore-oceanbase` 名义发布，文档在它自己的
-   [README](https://github.com/ob-labs/agentseek/tree/main/contrib/agentseek-tapestore-oceanbase) 中。
-
-## 为什么是 harness 而不是 framework
-
-agentseek 不打算取代你的 agent framework。如果你已经在用 LangChain、
-DeepAgents 或者自己的 orchestrator，把模型轮次走 `agentseek-langchain`，让 harness
-管状态、通道和 tape 就好。如果你是新项目，捆绑的 Bub kernel 本身就够用。
-
-正是 harness 这种形态让 [扩展模型](../explanation/extension-model.zh.md) 能保持
-精简：五个可扩展点（项目指令、skills、plugins、MCP servers、contrib 包）按代价排
-序，通常最便宜的答案就是对的答案。
-
-## Bub、tape，以及 agentseek 站在哪里
-
-agentseek **打包了 [Bub](https://github.com/bubbuild/bub)** —— 同一套 hook 优先的
-turn pipeline、channel、tape、skills 和插件模型。`agentseek` 是发行版入口；
-`.agentseek/` 和 `AGENTSEEK_*` 是面向项目的默认值。除了 CLI 命令替换之外，Bub 没有被
-fork 也没有被改。完整关系见
-[agentseek 和 Bub 的关系](../explanation/bub-relationship.zh.md)。
-
-[Why we rewrote Bub](https://bub.build/posts/why-rewrite-bub/) 这篇文章解释了维护
-模型：**小而严格的 kernel** 加 **松耦合的 plugin**。agentseek 在那张图里就是
-**harness 和默认捆绑层** —— 它不试图把所有 store 和 channel 都自己实现。
+这也是为什么推荐模板是 `deepagents/default`：它把 DeepAgents runnable 放进
+AgentSeek harness，同时应用代码仍然保持清楚。
 
 ## 从哪里开始
 
-- **动手体验：** [教程](../tutorials/index.zh.md)。CLI 走查五分钟；first harness
-  app 是大多数应用开发者真正想走的路径。
-- **查事实：** [参考](../reference/index.zh.md)，包括环境变量、CLI、包、文件布局、
-  Docker。
-- **决定改动放在哪里：** [扩展模型](../explanation/extension-model.zh.md)。
-- **仓库地址：** [ob-labs/agentseek on GitHub](https://github.com/ob-labs/agentseek)。
-- **目录：** 站点上的 [Hub](../hub.zh.md) 收录了插件和技能；更广的 Bub 生态请看
-  [hub.bub.build](https://hub.bub.build)。
+- 从 `deepagents/default` 构建推荐应用：[模板参考](../reference/templates.zh.md)。
+- 理解数据模型：[运行时数据模型](../explanation/runtime-data-model.zh.md)。
+- 了解 LangChain 和 DeepAgents 如何接入：[LangChain 关系](../explanation/langchain-relationship.zh.md)。
+- 浏览集成：[Hub](../hub.zh.md)。
